@@ -15,21 +15,39 @@ def fileExists(fileName):
         quit()
 
 #function below will check and change the ParamCard
-def changeParamCard(MZd, MfD1, paramCardFileName):
+def changeParamCard(MZd, MFd1, paramCardFileName):
     #gets the fileReader via fileExists
     massiveFileString = "";
     with fileExists(paramCardFileName) as fp:
         line = fp.readline()
         while line:
-            #input(line)
-            massiveFileString += line
+            if "MZd" in line or "MFd1" in line:
+                #separates each line based on whitespace
+                lineArr = line.split(" ")
+
+                #removes any null string characters
+                lineArr = [i for i in lineArr if i != '']
+
+                #sets designated number
+                setNumber = 0
+                setString = ""
+                if "MZd" in line:
+                    number = MZd
+                    setString = "MZd"
+                else:
+                    number = MFd1
+                    setString = "MFd1"
+
+                #makes a new line and adds that to the massiveFileString
+                newLine = lineArr[0] + " " + str("{:.6e}".format(number)) + " # " + setString + "\n"
+                massiveFileString += newLine
+            else:
+                massiveFileString += line
+            
             line = fp.readline()
 
-    print(massiveFileString)
-            
-
-
-    
+    with open(paramCardFileName, 'w') as fp:
+        fp.write(massiveFileString)
     
 
 
@@ -88,7 +106,10 @@ def getCSVInformation(csvFileName):
 
 #below is where the filepath is stored, this is where you change the filepath
 
-getCSVInformation(STANDARD_CSV_FILE_NAME)
-changeParamCard(1,2,STANDARD_PARAM_CARD_FILE_NAME)
+informationDictionary = getCSVInformation(STANDARD_CSV_FILE_NAME)
+
+for mzdItem in informationDictionary:
+    for mfd1Item in informationDictionary.get(mzdItem):
+        changeParamCard(int(mzdItem), int(mfd1Item),STANDARD_PARAM_CARD_FILE_NAME)
 
 
