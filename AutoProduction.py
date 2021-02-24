@@ -114,12 +114,15 @@ for mzdItem in informationDictionary:
     for mfd1Item in informationDictionary.get(mzdItem):
         changeParamCard(int(mzdItem), int(mfd1Item),STANDARD_PARAM_CARD_FILE_NAME)
         #run command
-        p = Popen("./bin/generate_events",stdin=PIPE, shell=True)
-        time.sleep(5)
-        p.communicate(input=b'\n')
-        time.sleep(5)
-        p.communicate
-        time.sleep(120)
+        try:
+            p = Popen("./bin/generate_events",stdin=PIPE, shell=True)
+            time.sleep(5)
+            p.communicate(input=b'\n')
+            time.sleep(5)
+            p.communicate
+            time.sleep(120)
+        except:
+            print("magic")
         #Events/run*
         #foreach run:
         #find gz, untar, and store
