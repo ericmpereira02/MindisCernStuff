@@ -44,8 +44,8 @@ Block mass
    15 1.777000e+00 # MTA 
    23 9.118760e+01 # MZ 
    25 1.250000e+02 # MH 
-1023 7.000000e+02 # MZd
-5000521 5.000000e+01 # MFd1
+1023 3.000000e+02 # MZd
+5000521 2.000000e+01 # MFd1
   5000523 2.000000e+00 # MFd21 
 ## Dependent parameters, given by model restrictions.
 ## Those values should be edited following the 

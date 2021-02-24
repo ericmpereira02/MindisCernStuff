@@ -1,7 +1,8 @@
 import tarfile
 import csv
-import sys
-import os
+from subprocess import Popen, PIPE
+import time
+
 
 STANDARD_CSV_FILE_NAME        = "Higher_mass_fD_autoProduction.csv"
 STANDARD_PARAM_CARD_FILE_NAME = "param_card.dat"
@@ -41,6 +42,7 @@ def changeParamCard(MZd, MFd1, paramCardFileName):
                 #makes a new line and adds that to the massiveFileString
                 newLine = lineArr[0] + " " + str("{:.6e}".format(number)) + " # " + setString + "\n"
                 massiveFileString += newLine
+            #appends generic string to line to write later on
             else:
                 massiveFileString += line
             
@@ -111,5 +113,19 @@ informationDictionary = getCSVInformation(STANDARD_CSV_FILE_NAME)
 for mzdItem in informationDictionary:
     for mfd1Item in informationDictionary.get(mzdItem):
         changeParamCard(int(mzdItem), int(mfd1Item),STANDARD_PARAM_CARD_FILE_NAME)
+        #run command
+        p = Popen("./bin/generate_events",stdin=PIPE, shell=True)
+        time.sleep(5)
+        p.communicate(input=b'\n')
+        time.sleep(5)
+        p.communicate
+        time.sleep(120)
+        #Events/run*
+        #foreach run:
+        #find gz, untar, and store
+        #mkdir under specific MZD mass, and then rezip in events
+        #untar a file and put it in some other directory
+
+#after untarring everything and storing in a director retar everything
 
 
