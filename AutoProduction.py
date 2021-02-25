@@ -1,11 +1,12 @@
-import tarfile
-import csv
+import tarfile, csv, sys
 from subprocess import Popen, PIPE
-import time
+from os import listdir as listdir
+from time import sleep as sleep
 
 
 STANDARD_CSV_FILE_NAME        = "Higher_mass_fD_autoProduction.csv"
 STANDARD_PARAM_CARD_FILE_NAME = "param_card.dat"
+EVENTS_DIRECTORY              = "/home/shellshock/Events"
 
 #function below checks to see if a file exists and yells and quits if it doesn't exist
 def fileExists(fileName):
@@ -113,17 +114,29 @@ informationDictionary = getCSVInformation(STANDARD_CSV_FILE_NAME)
 for mzdItem in informationDictionary:
     for mfd1Item in informationDictionary.get(mzdItem):
         changeParamCard(int(mzdItem), int(mfd1Item),STANDARD_PARAM_CARD_FILE_NAME)
-        #run command
+        #This Try except will try to run the event, if it fails it will print error and quit
         try:
+            # a sleep is implemented between each event generation as 
             p = Popen("./bin/generate_events",stdin=PIPE, shell=True)
-            time.sleep(5)
+            #time.sleep(5)
             p.communicate(input=b'\n')
-            time.sleep(5)
+            #time.sleep(5)
             p.communicate
-            time.sleep(120)
+            #time.sleep(120)
         except:
             print("magic")
-        #Events/run*
+        #goes through events directory to find the runs
+        eventList = listdir(EVENTS_DIRECTORY)
+        for event in eventList:
+            if "run" in event:
+                runDirList = listdir(EVENTS_DIRECTORY+"/"+event)
+                for runItem in runDirList:
+                    if runItem[-2:] == "gz":
+                        tarredFile = tarfile.open(EVENTS_DIRECTORY+"/"+event+'/'+runItem)
+                        tarredFile.extractall()
+                        tarredFile.close()
+
+                
         #foreach run:
         #find gz, untar, and store
         #mkdir under specific MZD mass, and then rezip in events
