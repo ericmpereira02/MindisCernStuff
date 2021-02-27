@@ -1,20 +1,21 @@
 import tarfile, csv, sys
 from subprocess import Popen, PIPE
-from os import listdir as listdir
+import os
+from shutil import rmtree as rmtree
 from time import sleep as sleep
 
 
 STANDARD_CSV_FILE_NAME        = "Higher_mass_fD_autoProduction.csv"
 STANDARD_PARAM_CARD_FILE_NAME = "param_card.dat"
-EVENTS_DIRECTORY              = "/home/shellshock/Events"
+EVENTS_DIRECTORY              = "../Events"
 
 #function below checks to see if a file exists and yells and quits if it doesn't exist
 def fileExists(fileName):
     try:
         return open(fileName, 'r+')
-    except:
-        print("File specified: \"" + str(fileName) + "\" not found. make sure file exists and try again")
-        quit()
+    except Exception as e:
+        print(e + "\n\nFile specified: \"" + str(fileName) + "\" not found. make sure file exists and try again")
+        exit()
 
 #function below will check and change the ParamCard
 def changeParamCard(MZd, MFd1, paramCardFileName):
@@ -23,32 +24,34 @@ def changeParamCard(MZd, MFd1, paramCardFileName):
     with fileExists(paramCardFileName) as fp:
         line = fp.readline()
         while line:
-            if "MZd" in line or "MFd1" in line:
+            if 'MZd' in line or 'MFd1' in line:
                 #separates each line based on whitespace
-                lineArr = line.split(" ")
+                lineArr = line.split(' ')
 
                 #removes any null string characters
                 lineArr = [i for i in lineArr if i != '']
 
                 #sets designated number
                 setNumber = 0
-                setString = ""
-                if "MZd" in line:
+                setString = ''
+                if 'MZd' in line:
                     number = MZd
-                    setString = "MZd"
+                    setString = 'MZd'
                 else:
                     number = MFd1
-                    setString = "MFd1"
+                    setString = 'MFd1'
 
                 #makes a new line and adds that to the massiveFileString
-                newLine = lineArr[0] + " " + str("{:.6e}".format(number)) + " # " + setString + "\n"
+                newLine = lineArr[0] + ' ' + str('{:.6e}'.format(number)) + ' # ' + setString + '\n'
                 massiveFileString += newLine
             #appends generic string to line to write later on
             else:
                 massiveFileString += line
-            
+
+            #reads the next line to continue loop
             line = fp.readline()
 
+    #opens the paramCardFile and completely writes over everything with data just compiled
     with open(paramCardFileName, 'w') as fp:
         fp.write(massiveFileString)
     
@@ -72,21 +75,22 @@ def getCSVInformation(csvFileName):
 
     #goes through each rwo in the csv and starts organizing data 
     for row in csvReader:
-        if (row[0] == "MZd"):
+        if (row[0] == 'MZd'):
             for item in row:
-                if (item != "MZd"):
+                if (item != 'MZd'):
                     itemDictionary.update({item : []})
-        elif row[0] == "MfD1":
+        elif row[0] == 'MfD1':
             for item in row:
-                if(item != "MfD1"):
+                if(item != 'MfD1'):
                     start.append(item)
-        elif row[0] == "":
+        elif row[0] == '':
             for item in row:
                 if (item != ""):
                     end.append(item)
+        #throws an error in the csv is in the wrong format
         else:
-            print("csvfile you input is in wrong format. Try again")
-            quit()
+            print('csvfile you input is in wrong format. Try again')
+            exit()
 
     #goes through each item in the dictionary and gets the start and end range and appends that to the dictionary.      
     count = 0
@@ -94,8 +98,8 @@ def getCSVInformation(csvFileName):
         try:
             itemDictionary[key] = [x for x in range(int(start[count]), int(end[count])) if x % 5 == 0]
             count+=1
-        except:
-            input("do not have enough items in start or end. try again")
+        except Exception as e:
+            print(e + '\n\ndo not have enough items in start or end. try again')
             exit()
 
     #print("Dictionary is:\n" + str(itemDictionary))
@@ -117,31 +121,39 @@ for mzdItem in informationDictionary:
         #This Try except will try to run the event, if it fails it will print error and quit
         try:
             # a sleep is implemented between each event generation as 
-            p = Popen("./bin/generate_events",stdin=PIPE, shell=True)
+            p = Popen('./bin/generate_events',stdin=PIPE, shell=True)
             #time.sleep(5)
             p.communicate(input=b'\n')
             #time.sleep(5)
             p.communicate
             #time.sleep(120)
         except:
-            print("magic")
+            print('./bin/generate_events')
         #goes through events directory to find the runs
-        eventList = listdir(EVENTS_DIRECTORY)
+        eventList = os.listdir(EVENTS_DIRECTORY)
         for event in eventList:
-            if "run" in event:
-                runDirList = listdir(EVENTS_DIRECTORY+"/"+event)
+            if 'run' in event:
+                runDirList = os.listdir(EVENTS_DIRECTORY+'/'+event)
                 for runItem in runDirList:
-                    if runItem[-2:] == "gz":
-                        tarredFile = tarfile.open(EVENTS_DIRECTORY+"/"+event+'/'+runItem)
-                        tarredFile.extractall()
-                        tarredFile.close()
-
-                
-        #foreach run:
-        #find gz, untar, and store
-        #mkdir under specific MZD mass, and then rezip in events
-        #untar a file and put it in some other directory
-
-#after untarring everything and storing in a director retar everything
+                    if runItem[-2:] == 'gz':
+                        #opens the tarred file, and untars it in specified location under specific mzd and mfd
+                        with tarfile.open(EVENTS_DIRECTORY+'/'+event+'/'+runItem) as eventTar:
+                            try:
+                                eventTar.extractall(path=(EVENTS_DIRECTORY+'/mzd_'+str(mzdItem)+'/mfd1_'+str(mfd1Item)))
+                                #input('untarred file check')
+                            except Exception as e:
+                                print(e + '\n\nfile: ' + (EVENTS_DIRECTORY+'/'+event+'/'+runItem) + ' is unable to be untarred')
+                                exit()
+    try:
+        currentDirectory = os.getcwd()
+        os.chdir(EVENTS_DIRECTORY)
+        tarName = 'mzd_' + str(mzdItem)+'.tar.gz'
+        with tarfile.open(tarName, 'w:gz') as tar:
+            stuff = tar.add('mzd_'+str(mzdItem))
+            rmtree('mzd_'+str(mzdItem))
+            os.chdir(currentDirectory)
+    except Exception as e:
+        chdir(currentDirectory)
+        print(e + '\n\nUnable to compress file, continuing...')
 
 
