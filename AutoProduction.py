@@ -4,10 +4,11 @@ import os
 from shutil import rmtree as rmtree
 from time import sleep as sleep
 
-
+#THESE ARE ALL RELATIVE LOCATIONS
 STANDARD_CSV_FILE_NAME        = "Higher_mass_fD_autoProduction.csv"
 STANDARD_PARAM_CARD_FILE_NAME = "param_card.dat"
 EVENTS_DIRECTORY              = "../Events"
+GENERATE_EVENTS               = "./../bin/generate"
 
 #function below checks to see if a file exists and yells and quits if it doesn't exist
 def fileExists(fileName):
@@ -102,8 +103,6 @@ def getCSVInformation(csvFileName):
             print(e + '\n\ndo not have enough items in start or end. try again')
             exit()
 
-    #print("Dictionary is:\n" + str(itemDictionary))
-
     #closes all the files so nothing weird and obscure happens
     csvFile.close()
     tempFile.close()
@@ -118,20 +117,25 @@ informationDictionary = getCSVInformation(STANDARD_CSV_FILE_NAME)
 for mzdItem in informationDictionary:
     for mfd1Item in informationDictionary.get(mzdItem):
         changeParamCard(int(mzdItem), int(mfd1Item),STANDARD_PARAM_CARD_FILE_NAME)
+        eventListBefore = os.listdir(EVENTS_DIRECTORY)
         #This Try except will try to run the event, if it fails it will print error and quit
         try:
             # a sleep is implemented between each event generation as 
-            p = Popen('./bin/generate_events',stdin=PIPE, shell=True)
-            #time.sleep(5)
+            p = Popen(GENERATE_EVENTS,stdin=PIPE, shell=True)
+            sleep(5)
             p.communicate(input=b'\n')
-            #time.sleep(5)
+            sleep(5)
             p.communicate
-            #time.sleep(120)
+            sleep(300)
         except:
-            print('./bin/generate_events')
+            print(GENERATE_EVENTS + ' is not found, try changing path and going again')
+            #exit()
         #goes through events directory to find the runs
-        eventList = os.listdir(EVENTS_DIRECTORY)
-        for event in eventList:
+        print("mzd: " + str(mzdItem) + ", mfd: " + str(mfd1Item))
+        sleep(5)
+        eventListAfter = os.listdir(EVENTS_DIRECTORY)
+        item = [i for i in eventListAfter if i not in eventListBefore]
+        for event in item:
             if 'run' in event:
                 runDirList = os.listdir(EVENTS_DIRECTORY+'/'+event)
                 for runItem in runDirList:
@@ -140,20 +144,20 @@ for mzdItem in informationDictionary:
                         with tarfile.open(EVENTS_DIRECTORY+'/'+event+'/'+runItem) as eventTar:
                             try:
                                 eventTar.extractall(path=(EVENTS_DIRECTORY+'/mzd_'+str(mzdItem)+'/mfd1_'+str(mfd1Item)))
-                                #input('untarred file check')
+                                rmtree(EVENTS_DIRECTORY+'/'+event)
                             except Exception as e:
                                 print(e + '\n\nfile: ' + (EVENTS_DIRECTORY+'/'+event+'/'+runItem) + ' is unable to be untarred')
                                 exit()
-    try:
-        currentDirectory = os.getcwd()
-        os.chdir(EVENTS_DIRECTORY)
-        tarName = 'mzd_' + str(mzdItem)+'.tar.gz'
-        with tarfile.open(tarName, 'w:gz') as tar:
-            stuff = tar.add('mzd_'+str(mzdItem))
-            rmtree('mzd_'+str(mzdItem))
-            os.chdir(currentDirectory)
-    except Exception as e:
-        chdir(currentDirectory)
-        print(e + '\n\nUnable to compress file, continuing...')
+                        try:
+                            currentDirectory = os.getcwd()
+                            os.chdir(EVENTS_DIRECTORY)
+                            tarName = 'mzd_' + str(mzdItem)+'.tar.gz'
+                            with tarfile.open(tarName, 'w:gz') as tar:
+                                stuff = tar.add('mzd_'+str(mzdItem)+'/mfd1_'+str(mfd1Item))
+                                rmtree('mzd_'+str(mzdItem))
+                                os.chdir(currentDirectory)
+                        except Exception as e:
+                            os.chdir(currentDirectory)
+                            print(e + '\n\nUnable to compress file, continuing...')
 
 
