@@ -126,7 +126,7 @@ for mzdItem in informationDictionary:
             p.communicate(input=b'\n')
             sleep(5)
             p.communicate
-            sleep(300)
+            sleep(240)
         except:
             print(GENERATE_EVENTS + ' is not found, try changing path and going again')
             #exit()
@@ -141,6 +141,7 @@ for mzdItem in informationDictionary:
                 for runItem in runDirList:
                     if runItem[-2:] == 'gz':
                         #opens the tarred file, and untars it in specified location under specific mzd and mfd
+                        print("untarring " + EVENTS_DIRECTORY+'/'+event+'/'+runItem)
                         with tarfile.open(EVENTS_DIRECTORY+'/'+event+'/'+runItem) as eventTar:
                             try:
                                 eventTar.extractall(path=(EVENTS_DIRECTORY+'/mzd_'+str(mzdItem)+'/mfd1_'+str(mfd1Item)))
