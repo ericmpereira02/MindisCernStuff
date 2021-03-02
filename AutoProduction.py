@@ -132,7 +132,6 @@ for mzdItem in informationDictionary:
             #exit()
         #goes through events directory to find the runs
         print("mzd: " + str(mzdItem) + ", mfd: " + str(mfd1Item))
-        sleep(5)
         eventListAfter = os.listdir(EVENTS_DIRECTORY)
         item = [i for i in eventListAfter if i not in eventListBefore]
         for event in item:
@@ -164,17 +163,19 @@ for mzdItem in informationDictionary:
                         sleep(1)
                         os.chdir(EVENTS_DIRECTORY+'/mzd_'+str(mzdItem)+'/mfd1_'+str(mfd1Item))
 
-                        untarCommand = 'tar -xvzf ' + runItem + ' && rm -rf ' + runItem
-                        Popen(untarCommand,stdin=PIPE,shell=True)
+                        renamedLHE = 'mzd_'+str(mzdItem)+'_mfd1_'+str(mfd1Item)+'.lhe.tar.gz'
+                        renameLHECommand = 'mv '+runItem+' '+renamedLHE
+                        Popen(renameLHECommand,stdin=PIPE,shell=True)
                         os.chdir(currentDirectory)
                         
                         #try:
                         currentDirectory = os.getcwd()
                         os.chdir(EVENTS_DIRECTORY)
-                        tarName = 'mzd_' + str(mzdItem)+'.tar.gz'
+                        tarName = 'mzd_'+ str(mzdItem)+'.tar.gz'
                         with tarfile.open(tarName, 'w:gz') as tar:
                             stuff = tar.add('mzd_'+str(mzdItem)+'/mfd1_'+str(mfd1Item))
                             rmtree('mzd_'+str(mzdItem))
+                            rmtree(event)
                             os.chdir(currentDirectory)
                         #except Exception as e:
                             #os.chdir(currentDirectory)
