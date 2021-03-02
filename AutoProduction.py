@@ -122,11 +122,11 @@ for mzdItem in informationDictionary:
         try:
             # a sleep is implemented between each event generation as 
             p = Popen(GENERATE_EVENTS,stdin=PIPE, shell=True)
-            sleep(5)
+            #sleep(5)
             p.communicate(input=b'\n')
-            sleep(5)
+            #sleep(5)
             p.communicate
-            sleep(240)
+            #sleep(240)
         except:
             print(GENERATE_EVENTS + ' is not found, try changing path and going again')
             #exit()
@@ -142,23 +142,42 @@ for mzdItem in informationDictionary:
                     if runItem[-2:] == 'gz':
                         #opens the tarred file, and untars it in specified location under specific mzd and mfd
                         print("untarring " + EVENTS_DIRECTORY+'/'+event+'/'+runItem)
-                        with tarfile.open(EVENTS_DIRECTORY+'/'+event+'/'+runItem) as eventTar:
-                            try:
-                                eventTar.extractall(path=(EVENTS_DIRECTORY+'/mzd_'+str(mzdItem)+'/mfd1_'+str(mfd1Item)))
-                                rmtree(EVENTS_DIRECTORY+'/'+event)
-                            except Exception as e:
-                                print(e + '\n\nfile: ' + (EVENTS_DIRECTORY+'/'+event+'/'+runItem) + ' is unable to be untarred')
-                                exit()
-                        try:
-                            currentDirectory = os.getcwd()
-                            os.chdir(EVENTS_DIRECTORY)
-                            tarName = 'mzd_' + str(mzdItem)+'.tar.gz'
-                            with tarfile.open(tarName, 'w:gz') as tar:
-                                stuff = tar.add('mzd_'+str(mzdItem)+'/mfd1_'+str(mfd1Item))
-                                rmtree('mzd_'+str(mzdItem))
-                                os.chdir(currentDirectory)
-                        except Exception as e:
+
+                        #errors with extracting tar using python, so switching to directory and untarring is best
+                        currentDirectory = os.getcwd()
+
+                        os.chdir(EVENTS_DIRECTORY)
+                        Popen('mkdir mzd_'+str(mzdItem),stdin=PIPE, shell=True)
+                        sleep(1)
+                        os.chdir('mzd_'+str(mzdItem))
+                        Popen('mkdir mfd1_'+str(mfd1Item),stdin=PIPE,shell=True)
+                        sleep(1)
+                        os.chdir(currentDirectory)
+                        
+                        os.chdir(EVENTS_DIRECTORY+'/'+event)
+                        Popen('mkdir '+EVENTS_DIRECTORY+'/mzd_'+str(mzdItem)+'/mfd1_'+str(mfd1Item), stdin=PIPE, shell=True)
+                        moveFileCommand = 'mv '+runItem+' ../mzd_'+str(mzdItem)+'/mfd1_'+str(mfd1Item)
+                        Popen(moveFileCommand,stdin=PIPE,shell=True)
+                        sleep(1)
+                        os.chdir(currentDirectory)
+                        
+                        sleep(1)
+                        os.chdir(EVENTS_DIRECTORY+'/mzd_'+str(mzdItem)+'/mfd1_'+str(mfd1Item))
+
+                        untarCommand = 'tar -xvzf ' + runItem + ' && rm -rf ' + runItem
+                        Popen(untarCommand,stdin=PIPE,shell=True)
+                        os.chdir(currentDirectory)
+                        
+                        #try:
+                        currentDirectory = os.getcwd()
+                        os.chdir(EVENTS_DIRECTORY)
+                        tarName = 'mzd_' + str(mzdItem)+'.tar.gz'
+                        with tarfile.open(tarName, 'w:gz') as tar:
+                            stuff = tar.add('mzd_'+str(mzdItem)+'/mfd1_'+str(mfd1Item))
+                            rmtree('mzd_'+str(mzdItem))
                             os.chdir(currentDirectory)
-                            print(e + '\n\nUnable to compress file, continuing...')
+                        #except Exception as e:
+                            #os.chdir(currentDirectory)
+                            #print(e + '\n\nUnable to compress file, continuing...')
 
 
