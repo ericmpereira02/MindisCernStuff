@@ -14,3 +14,6 @@ This is to automate the job of Mindi so it does 100 things all at once
 10. zip it
 11. copy it to my mac
 
+## What is happening now
+
+We did it! well mostly. Ideally it works, but more testing is required on Mehdi's machine. we need to update the documentation on AutoProduction.py, and this README needs to reflect proper csv input. maybe, in the future, implement a csv that isn't restricted to mzd and mfd1, but other variables? for now that is unnecessary.
