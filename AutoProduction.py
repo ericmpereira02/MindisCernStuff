@@ -148,9 +148,22 @@ for mzdItem in informationDictionary:
 
                         #this section of code goes into event directory and creates the directories we place
                         #the lhe.tar.gz in
+                        #if the current List exists untar it and append items to that list 
+                        # below opens (or creates tar if it doesn't exist) of .zip with all info, and stores
+                        # run information in proper directories. after it gets all info it deletes the run
+                        # and temporary directory created by program
+                        os.chdir(currentDirectory)
                         os.chdir(EVENTS_DIRECTORY)
-                        Popen('mkdir mzd_'+str(mzdItem),stdin=PIPE, shell=True)
-                        sleep(1)
+                        tarName = 'mzd_'+ str(mzdItem)+'.tar.gz'
+                        currentList = os.listdir(os.curdir);
+                        if tarName in currentList:
+                            Popen('tar -xvf ' + str(tarName),stdin=PIPE,shell=True)
+                            sleep(2)
+                            Popen('rm -rf ' + str(tarName),stdin=PIPE,shell=True)
+                            sleep(1)
+                        else:
+                            Popen('mkdir mzd_'+str(mzdItem),stdin=PIPE, shell=True)
+                            sleep(1)
                         os.chdir('mzd_'+str(mzdItem))
                         Popen('mkdir mfd1_'+str(mfd1Item),stdin=PIPE,shell=True)
                         sleep(1)
@@ -165,17 +178,16 @@ for mzdItem in informationDictionary:
                         
                         # below changes name of LHE to match MZD and MFD1 to proper names
                         os.chdir(EVENTS_DIRECTORY+'/mzd_'+str(mzdItem)+'/mfd1_'+str(mfd1Item))
-                        renamedLHE = 'mzd_'+str(mzdItem)+'_mfd1_'+str(mfd1Item)+'.lhe.tar.gz'
+                        renamedLHE = 'mzd_'+str(mzdItem)+'_mfd1_'+str(mfd1Item)+'.tar.gz'
                         renameLHECommand = 'mv '+runItem+' '+renamedLHE
                         Popen(renameLHECommand,stdin=PIPE,shell=True)
                         os.chdir(currentDirectory)
-                        
-                        # below opens (or creates tar if it doesn't exist) of .zip with all info, and stores
-                        # run information in proper directories. after it gets all info it deletes the run
-                        # and temporary directory created by program
                         os.chdir(EVENTS_DIRECTORY)
-                        tarName = 'mzd_'+ str(mzdItem)+'.tar.gz'
+
                         with tarfile.open(tarName, 'w:gz') as tar:
+                            for item in os.listdir('mzd_'+str(mzdItem)):
+                                stuff = tar.add('mzd_'+str(mzdItem)+'/'+item)
+                            
                             stuff = tar.add('mzd_'+str(mzdItem)+'/mfd1_'+str(mfd1Item))
                             rmtree('mzd_'+str(mzdItem))
                             rmtree(event)
