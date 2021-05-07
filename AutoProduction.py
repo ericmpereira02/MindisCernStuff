@@ -122,14 +122,14 @@ for mzdItem in informationDictionary:
         try:
             # a sleep is implemented between each event generation as 
             p = Popen(GENERATE_EVENTS,stdin=PIPE, shell=True)
-            #sleep(5)
+            sleep(5)
             p.communicate(input=b'\n')
-            #sleep(5)
+            sleep(5)
             p.communicate
-            #sleep(240)
+            sleep(240)
         except:
             print(GENERATE_EVENTS + ' is not found, try changing path and going again')
-            #exit()
+            exit()
 
         #goes through events directory to find the runs
         print("mzd: " + str(mzdItem) + ", mfd: " + str(mfd1Item))
