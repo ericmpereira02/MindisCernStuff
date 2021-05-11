@@ -110,6 +110,9 @@ def getCSVInformation(csvFileName):
     #return dictionary
     return itemDictionary
 
+
+
+
 #below is where the filepath is stored, this is where you change the filepath
 
 informationDictionary = getCSVInformation(STANDARD_CSV_FILE_NAME)
@@ -164,21 +167,18 @@ for mzdItem in informationDictionary:
                         else:
                             Popen('mkdir mzd_'+str(mzdItem),stdin=PIPE, shell=True)
                             sleep(1)
-                        os.chdir('mzd_'+str(mzdItem))
-                        Popen('mkdir mfd1_'+str(mfd1Item),stdin=PIPE,shell=True)
-                        sleep(1)
                         os.chdir(currentDirectory)
                         
                         # below goes to specific event directory and moves .lhe.tar.gz to proper directory
                         os.chdir(EVENTS_DIRECTORY+'/'+event)
-                        moveFileCommand = 'mv '+runItem+' ../mzd_'+str(mzdItem)+'/mfd1_'+str(mfd1Item)
+                        moveFileCommand = 'mv '+runItem+' ../mzd_'+str(mzdItem)
                         Popen(moveFileCommand,stdin=PIPE,shell=True)
                         sleep(1)
                         os.chdir(currentDirectory)
                         
                         # below changes name of LHE to match MZD and MFD1 to proper names
-                        os.chdir(EVENTS_DIRECTORY+'/mzd_'+str(mzdItem)+'/mfd1_'+str(mfd1Item))
-                        renamedLHE = 'mzd_'+str(mzdItem)+'_mfd1_'+str(mfd1Item)+'.tar.gz'
+                        os.chdir(EVENTS_DIRECTORY+'/mzd_'+str(mzdItem))
+                        renamedLHE = 'mzd_'+str(mzdItem)+'_mfd1_'+str(mfd1Item)+'.lhe.gz'
                         renameLHECommand = 'mv '+runItem+' '+renamedLHE
                         Popen(renameLHECommand,stdin=PIPE,shell=True)
                         os.chdir(currentDirectory)
@@ -192,5 +192,3 @@ for mzdItem in informationDictionary:
                             rmtree('mzd_'+str(mzdItem))
                             rmtree(event)
                             os.chdir(currentDirectory)
-
-
