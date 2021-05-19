@@ -1,4 +1,5 @@
 import tarfile, csv, sys
+import subprocess
 from subprocess import Popen, PIPE
 import os
 from shutil import rmtree as rmtree
@@ -7,7 +8,7 @@ from time import sleep as sleep
 #THESE ARE ALL RELATIVE LOCATIONS
 STANDARD_CSV_FILE_NAME        = "Higher_mass_fD_autoProduction.csv"
 STANDARD_PARAM_CARD_FILE_NAME = "param_card.dat"
-EVENTS_DIRECTORY              = "../Events"
+EVENTS_DIRECTORY              = "../../../Events"
 GENERATE_EVENTS               = "./../bin/generate"
 
 #function below checks to see if a file exists and yells and quits if it doesn't exist
@@ -114,7 +115,6 @@ def getCSVInformation(csvFileName):
 
 
 #below is where the filepath is stored, this is where you change the filepath
-
 informationDictionary = getCSVInformation(STANDARD_CSV_FILE_NAME)
 
 for mzdItem in informationDictionary:
@@ -123,13 +123,13 @@ for mzdItem in informationDictionary:
         eventListBefore = os.listdir(EVENTS_DIRECTORY)
         #This Try except will try to run the event, if it fails it will print error and quit
         try:
-            # a sleep is implemented between each event generation as 
+            # a sleep is implemented between each event generation as
             p = Popen(GENERATE_EVENTS,stdin=PIPE, shell=True)
-            sleep(5)
+            #sleep(5)
             p.communicate(input=b'\n')
-            sleep(5)
+            #sleep(5)
             p.communicate
-            sleep(240)
+            #sleep(240)
         except:
             print(GENERATE_EVENTS + ' is not found, try changing path and going again')
             exit()
@@ -178,17 +178,18 @@ for mzdItem in informationDictionary:
                         
                         # below changes name of LHE to match MZD and MFD1 to proper names
                         os.chdir(EVENTS_DIRECTORY+'/mzd_'+str(mzdItem))
-                        renamedLHE = 'mzd_'+str(mzdItem)+'_mfd1_'+str(mfd1Item)+'.lhe.gz'
+                        renamedLHE = 'mfd1_'+str(mfd1Item)+'.lhe.gz'
                         renameLHECommand = 'mv '+runItem+' '+renamedLHE
                         Popen(renameLHECommand,stdin=PIPE,shell=True)
                         os.chdir(currentDirectory)
                         os.chdir(EVENTS_DIRECTORY)
 
                         with tarfile.open(tarName, 'w:gz') as tar:
-                            for item in os.listdir('mzd_'+str(mzdItem)):
+                            mzdDirList = os.listdir('mzd_'+str(mzdItem))
+                            for item in mzdDirList:
                                 stuff = tar.add('mzd_'+str(mzdItem)+'/'+item)
                             
-                            stuff = tar.add('mzd_'+str(mzdItem)+'/mfd1_'+str(mfd1Item))
+                            stuff = tar.add('mzd_'+str(mzdItem)+'/mfd1_'+str(mfd1Item)+'.lhe.gz')
                             rmtree('mzd_'+str(mzdItem))
                             rmtree(event)
                             os.chdir(currentDirectory)
