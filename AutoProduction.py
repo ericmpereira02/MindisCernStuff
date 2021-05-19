@@ -125,11 +125,11 @@ for mzdItem in informationDictionary:
         try:
             # a sleep is implemented between each event generation as
             p = Popen(GENERATE_EVENTS,stdin=PIPE, shell=True)
-            #sleep(5)
+            sleep(2)
             p.communicate(input=b'\n')
-            #sleep(5)
+            sleep(2)
             p.communicate
-            #sleep(240)
+            p.wait()
         except:
             print(GENERATE_EVENTS + ' is not found, try changing path and going again')
             exit()
@@ -160,20 +160,20 @@ for mzdItem in informationDictionary:
                         tarName = 'mzd_'+ str(mzdItem)+'.tar.gz'
                         currentList = os.listdir(os.curdir);
                         if tarName in currentList:
-                            Popen('tar -xvf ' + str(tarName),stdin=PIPE,shell=True)
-                            sleep(2)
-                            Popen('rm -rf ' + str(tarName),stdin=PIPE,shell=True)
-                            sleep(1)
+                            p = Popen('tar -xvf ' + str(tarName),stdin=PIPE,shell=True)
+                            p.wait()
+                            p = Popen('rm -rf ' + str(tarName),stdin=PIPE,shell=True)
+                            p.wait()
                         else:
-                            Popen('mkdir mzd_'+str(mzdItem),stdin=PIPE, shell=True)
-                            sleep(1)
+                            p = Popen('mkdir mzd_'+str(mzdItem),stdin=PIPE, shell=True)
+                            p.wait()
                         os.chdir(currentDirectory)
                         
                         # below goes to specific event directory and moves .lhe.tar.gz to proper directory
                         os.chdir(EVENTS_DIRECTORY+'/'+event)
                         moveFileCommand = 'mv '+runItem+' ../mzd_'+str(mzdItem)
-                        Popen(moveFileCommand,stdin=PIPE,shell=True)
-                        sleep(1)
+                        p = Popen(moveFileCommand,stdin=PIPE,shell=True)
+                        p.wait()
                         os.chdir(currentDirectory)
                         
                         # below changes name of LHE to match MZD and MFD1 to proper names
