@@ -128,7 +128,7 @@ for mzdItem in informationDictionary:
             p.wait()
         except:
             print(GENERATE_EVENTS + ' is not found, try changing path and going again')
-            #exit()
+            exit()
 
         #goes through events directory to find the runs
         print("mzd: " + str(mzdItem) + ", mfd: " + str(mfd1Item))
