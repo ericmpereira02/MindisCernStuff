@@ -15,7 +15,7 @@ def fileExists(fileName):
     try:
         return open(fileName, 'r+')
     except Exception as e:
-        print(e + "\n\nFile specified: \"" + str(fileName) + "\" not found. make sure file exists and try again")
+        print(str(e) + "\n\nFile specified: \"" + str(fileName) + "\" not found. make sure file exists and try again")
         exit()
 
 #function below will check and change the ParamCard
@@ -125,14 +125,13 @@ for mzdItem in informationDictionary:
         try:
             # a sleep is implemented between each event generation as 
             p = Popen(GENERATE_EVENTS,stdin=PIPE, shell=True)
-            sleep(5)
+            #sleep(3)
             p.communicate(input=b'\n')
-            sleep(5)
-            p.communicate
-            sleep(240)
+            p.communicate()
+            p.wait()
         except:
             print(GENERATE_EVENTS + ' is not found, try changing path and going again')
-            exit()
+            #exit()
 
         #goes through events directory to find the runs
         print("mzd: " + str(mzdItem) + ", mfd: " + str(mfd1Item))
@@ -157,38 +156,45 @@ for mzdItem in informationDictionary:
                         # and temporary directory created by program
                         os.chdir(currentDirectory)
                         os.chdir(EVENTS_DIRECTORY)
-                        tarName = 'mzd_'+ str(mzdItem)+'.tar.gz'
                         currentList = os.listdir(os.curdir);
-                        if tarName in currentList:
-                            Popen('tar -xvf ' + str(tarName),stdin=PIPE,shell=True)
-                            sleep(2)
-                            Popen('rm -rf ' + str(tarName),stdin=PIPE,shell=True)
-                            sleep(1)
-                        else:
-                            Popen('mkdir mzd_'+str(mzdItem),stdin=PIPE, shell=True)
-                            sleep(1)
+                        if 'mzd_'+str() not in currentList:
+                            p = Popen('mkdir mzd_'+str(mzdItem), shell=True)
+                            p.wait()
                         os.chdir(currentDirectory)
                         
                         # below goes to specific event directory and moves .lhe.tar.gz to proper directory
                         os.chdir(EVENTS_DIRECTORY+'/'+event)
                         moveFileCommand = 'mv '+runItem+' ../mzd_'+str(mzdItem)
-                        Popen(moveFileCommand,stdin=PIPE,shell=True)
-                        sleep(1)
+                        p = Popen(moveFileCommand,shell=True)
+                        p.wait()
                         os.chdir(currentDirectory)
                         
                         # below changes name of LHE to match MZD and MFD1 to proper names
                         os.chdir(EVENTS_DIRECTORY+'/mzd_'+str(mzdItem))
                         renamedLHE = 'mzd_'+str(mzdItem)+'_mfd1_'+str(mfd1Item)+'.lhe.gz'
                         renameLHECommand = 'mv '+runItem+' '+renamedLHE
-                        Popen(renameLHECommand,stdin=PIPE,shell=True)
-                        os.chdir(currentDirectory)
-                        os.chdir(EVENTS_DIRECTORY)
+                        p = Popen(renameLHECommand,shell=True)
+                        p.wait()
 
-                        with tarfile.open(tarName, 'w:gz') as tar:
-                            for item in os.listdir('mzd_'+str(mzdItem)):
-                                stuff = tar.add('mzd_'+str(mzdItem)+'/'+item)
-                            
-                            stuff = tar.add('mzd_'+str(mzdItem)+'/mfd1_'+str(mfd1Item))
-                            rmtree('mzd_'+str(mzdItem))
-                            rmtree(event)
-                            os.chdir(currentDirectory)
+
+                        os.chdir(currentDirectory+'/'+EVENTS_DIRECTORY)
+                        deleteRunCommand = 'rm -rf ' + event
+                        p = Popen(deleteRunCommand, shell=True)
+                        p.wait()
+
+                        os.chdir(currentDirectory)
+                        
+    os.chdir(EVENTS_DIRECTORY)
+    tarName = 'mzd_'+str(mzdItem)+'.tar.gz'
+    with tarfile.open(tarName, 'w:gz') as tar:
+        for item in os.listdir('mzd_'+str(mzdItem)):
+            try:
+                stuff = tar.add('mzd_'+str(mzdItem)+'/'+item)
+            except:
+                print("maybe a booboo shrug emoji")
+
+        print(f'delete mzd{mzdItem} folder')
+        deleteMZD = 'rm -rf mzd_'+ str(mzdItem)
+        p = Popen(deleteMZD, shell=True)
+        p.wait()    
+        os.chdir(currentDirectory)
