@@ -110,9 +110,6 @@ def getCSVInformation(csvFileName):
     #return dictionary
     return itemDictionary
 
-
-
-
 #below is where the filepath is stored, this is where you change the filepath
 
 informationDictionary = getCSVInformation(STANDARD_CSV_FILE_NAME)
